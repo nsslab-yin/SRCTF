@@ -4,7 +4,7 @@ By NSSLab@UGA
 
 # File structures
 - ctfs:  
-    - The source codes for different kind of challenges
+    - Dir for challenges contents
 - django_reuse:  
     - The website project written in Django
 - dockers:  
