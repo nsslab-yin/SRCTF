@@ -1,5 +1,5 @@
-# Portable_reuse
-(The portable website for SRCTF)
+# SR-CTF by NSSLab@UGA
+## Stepwise, Reusable CTF framework
 
 # File structures
 - ctfs:  
