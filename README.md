@@ -1,5 +1,6 @@
-# SR-CTF by NSSLab@UGA
-## Stepwise, Reusable CTF framework
+# SR-CTF 
+Stepwise, Reusable CTF framework
+By NSSLab@UGA
 
 # File structures
 - ctfs:  
