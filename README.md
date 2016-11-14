@@ -19,7 +19,8 @@ In order to use this script, simple execute
 
     ./install.sh
 
-The script will automatically install the django framework and all other necessary dependency.
+The script will install the django framework and all other necessary dependency.
+During the running of the script, you will be asked to provide some variables(Path to directory, Mysql root password, permission to install apts and so on...)
 The source code of the challenges and the website will be place in a folder you name under $HOME directory.
 Also, a folder named `guest` will be created in the root directory `/guests`. This folder contains the files for website users.  
 The website uses MySQL database and will create a user named `djdb` with password `django`.  
