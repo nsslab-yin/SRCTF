@@ -115,7 +115,6 @@ def your_ctf(request):
         ctfid = request.GET['ctfid']
         uid = request.user.id
         dirname = "ctf_" + str(uid) + "_" + str(ctfid)
-        container_name = "con_" + str(uid) + "_" + str(ctfid)
         
         try:
             ctf = Ctf_info.objects.get(pk = ctfid)
@@ -154,6 +153,8 @@ def your_ctf(request):
             
                 challenge = Challenge(user_id = uid, ctf_id = ctfid, status = 0, is_solved = 0, flag = c_flag, c_dir=dirname)
                 challenge.save()
+                
+            container_name = "con_bin_" + str(ctfid)
             if ('flag' in request.GET):
                 ctfflag = request.GET['flag']
                 if ctfflag == challenge.flag:
@@ -181,18 +182,26 @@ def your_ctf(request):
                     f.close()
                     challenge.flag = fid[fid.rfind('|')+1:]
                     challenge.save()'''
-                guest_dir = guest.guest.u_dir + '/' + str(dirname)
+                dirname = "ctf_" + str(uid)
+                guest_dir = '/guests/bin_'+ str(ctfid) + '/' + str(dirname)
                 os.popen('mkdir ' + guest_dir)
                 gen_path = utils.project_path + str(ctf.gen_path)
                 os.popen(gen_path)
                 src_path = utils.project_path + str(ctf.src_path)
                 #os.popen('cp ' + src_path + '* ' + str(guest_dir) )
                 os.popen('cp -r ' + src_path + '* ' + str(guest_dir) )
-                os.popen('docker run --privileged -d -P -h SRCTF --name ' + container_name + ' -v ' + str(guest_dir) + ':/home/guest/'+ dirname + ' ctf14')
+                #os.popen('docker run --privileged -d -P -h SRCTF --name ' + container_name + ' -v ' + str(guest_dir) + ':/home/guest/'+ dirname + ' ctf14')
+                guest_name = "guest" + str(uid)
+                guest_id = 7000 + int(uid)
+                flag_name = "flag" + str(uid)
+                flag_id = 9000 + int(uid)
+                os.popen('docker exec -d '+ container_name + ' useradd -M -s /bin/bash -u ' + str(guest_id)+ ' ' + guest_name)
+                os.popen('docker exec -d '+ container_name + ' useradd -M -s /sbin/nologin -u ' + str(flag_id)+ ' ' + flag_name)
                 #pswd = utils.pswd_generator()
                 pswd = Pswd_table.objects.get(pk = guest.guest.pswd_id).pswd
                 
-                pswd_cmd = 'echo guest:'+str(pswd)+" | docker exec -i "+container_name + " chpasswd"
+                #pswd_cmd = 'echo guest:'+str(pswd)+" | docker exec -i "+container_name + " chpasswd"
+                pswd_cmd = 'echo ' + guest_name + ':'+str(pswd)+" | docker exec -i "+container_name + " chpasswd"
                 os.popen(pswd_cmd)
                 #privilege settings !!!Could be dangerous
                 #filedir = "/home/ictf/cs@uga/ctfs/reuse_buffer_overflow/conf.json"
@@ -200,9 +209,20 @@ def your_ctf(request):
                 if confdir != "not_a_con":
                     conf = utils.getConf(utils.project_path + confdir)
                     for cmd in conf['execs']:
-                        #print cmd['cmd'] + dirname + cmd['extra']
-                        print 'docker exec ' + cmd['options']+ '-d ' + container_name + cmd['cmd'] + dirname + cmd['extra']
-                        os.popen('docker exec ' + cmd['options']+ '-d ' + container_name + cmd['cmd'] + dirname + cmd['extra'])
+                        #print cmd['cmd']
+                        ft = ()
+                        for i in range(0, cmd['num_args']):
+                            earg = cmd['args'][i]
+                            if earg == "__GUEST__":
+                                earg = guest_name
+                            elif earg == "__FLAG__":
+                                earg = flag_name
+                            elif earg == "__DIR__":
+                                earg = dirname
+                            ft = ft + ( earg, )
+                        execline = 'docker exec ' + cmd['options']+ '-d ' + container_name + cmd['cmd'].format(ft)
+                        #print execline
+                        os.popen(execline)
             
             #To get the public port(in willa) binded for docker container
             proc1 = subprocess.Popen(['docker', 'port', container_name, '22'], stdout = subprocess.PIPE)
@@ -213,7 +233,7 @@ def your_ctf(request):
             log_msg = '[INFO '+ str(now) +'] The docker #' + str(port).strip() + ' has been assigned to user ' + str(guest.username) + '('+ str(guest.id) +') for ctf #' + str(ctf.id) + '||'+ str(ip)
             logger.info(log_msg)
             '''
-            #generate temp password
+            #generate temp password image
             if pswd is not "":
                 ic = utils.ImageChar()
                 ic.draw_word(pswd)
@@ -235,12 +255,14 @@ def your_ctf(request):
                     pre_flag = conf['flag_pre'] + str(utils.id_generator())
                     fid = pre_flag + conf['flag_post']
                     f = open(utils.project_path + conf['flag_dir'], 'w')
+                    #print fid
                     f.write(fid+'\n')
                     f.close()
                     c_flag = pre_flag[pre_flag.find('FLAG_'):]
             
                 challenge = Challenge(user_id = uid, ctf_id = ctfid, status = 0, is_solved = 0, flag = c_flag, c_dir=dirname)
                 challenge.save()
+            container_name = "con_web_" + str(ctfid)
             if ('flag' in request.GET):
                 ctfflag = request.GET['flag']
                 if ctfflag == challenge.flag:
@@ -262,11 +284,17 @@ def your_ctf(request):
                 guest_dir = guest.guest.u_dir + '/' + str(dirname)
                 os.popen('mkdir ' + guest_dir)
                 gen_path = utils.project_path + str(ctf.gen_path)
+                #print gen_path
                 os.popen(gen_path)
                 src_path = utils.project_path + str(ctf.src_path)
                 #os.popen('cp ' + src_path + '* ' + str(guest_dir) )
                 os.popen('cp -r ' + src_path + '* ' + str(guest_dir) )
-                os.popen('docker run -d -P -h SRCTF --name ' + container_name + ' -v ' + str(guest_dir) + ':/app' + ' mylamp')
+                os.popen('chmod -R 555 ' + str(guest_dir))
+                os.popen('docker run -d -P -h SRCTF --name ' + container_name + ' mylamp')
+                
+                #os.popen('docker exec -d ' + container_name + ' mkdir /app/' + str(dirname))
+                #print 'docker cp ' + str(guest_dir) + '/. ' + container_name + ':/app/' + str(dirname) + '/'
+                os.popen('docker cp ' + str(guest_dir) + '/. ' + container_name + ':/app/' + str(dirname) + '/')
                 
                 #pswd = utils.pswd_generator()
                 # pswd = Pswd_table.objects.get(pk = guest.guest.pswd_id).pswd
@@ -279,9 +307,13 @@ def your_ctf(request):
                 if confdir != "not_a_con":
                     conf = utils.getConf(utils.project_path + confdir)
                     for cmd in conf['execs']:
-                        #print cmd['cmd'] + dirname + cmd['extra']
-                        print 'docker exec ' + cmd['options']+ '-d ' + container_name + cmd['cmd'] + dirname + cmd['extra']
+                        #print 'docker exec ' + cmd['options']+ '-d ' + container_name + cmd['cmd'] + dirname + cmd['extra']
                         os.popen('docker exec ' + cmd['options']+ '-d ' + container_name + cmd['cmd'] + dirname + cmd['extra'])
+                    for sql in conf['sql']:
+                        rstr = 'docker exec ' + '-i ' + container_name + sql['cmd']
+                        #print rstr
+                        #os.popen('/bin/bash -c \'{}\''.format(rstr))
+                        subprocess.call(rstr, shell=True, executable="/bin/bash")
             
                     proc2 = subprocess.Popen(['docker', 'port', container_name, '3306'], stdout = subprocess.PIPE)
                     portout2 = proc2.stdout.read()
@@ -298,7 +330,7 @@ def your_ctf(request):
             #To get the public port(in willa) binded for docker container
             proc1 = subprocess.Popen(['docker', 'port', container_name, '80'], stdout = subprocess.PIPE)
             portout = proc1.stdout.read()
-            port = portout[portout.find(':')+1:]
+            port = portout[portout.find(':')+1:-1]
             print port
             now = timezone.localtime(timezone.now())
             log_msg = '[INFO '+ str(now) +'] The docker #' + str(port).strip() + ' has been assigned to user ' + str(guest.username) + '('+ str(guest.id) +') for ctf #' + str(ctf.id) + '||'+ str(ip)

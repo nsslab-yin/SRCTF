@@ -30,9 +30,9 @@
                     {% if user.is_authenticated%}
                         {%  if user.guest.is_granted %}
                             <div class="panel panel-info">
-                                <div class="panel-heading">
+                                <div class="panel-heading" id="prepare" style="visibility: visible">
                                     <p>
-                                    <h3>Your challenge is ready:</h3>
+                                    <h3>Your challenge is ready!</h3>
                                     </p>
                                 </div>
                                 <div class="panel-body">
@@ -47,11 +47,11 @@
                                         {% else %}
                                             {% if ctf.cat.ctype.id == 1 %}
                                                 You can now connect the environment with the following command:<br>
-                                                <pre>ssh guest@{{ s_domain }} -p {{ port }}<br>Your password_id: {{ user.guest.pswd_id }}<br>(Please ask the admin or instructor to get your login password.)
+                                                <pre>ssh guest{{user.id}}@{{ s_domain }} -p {{ port }}<br>Your password_id: {{ user.guest.pswd_id }}<br>(Please ask the admin or instructor to get your login password.)
                                                 </pre>
                                             {% elif ctf.cat.ctype.id == 2 %}
                                                 You can now connect the environment with the following link:<br>
-                                                <pre>Click to start the challenge: <a href="http://{{ s_domain }}:{{ port }}" target="_blank">{{ s_domain }}:{{ port }}</a><br>Please wait for a few seconds in this target link.</pre>
+                                                <pre>Click to start the challenge: <div id="startctf" style="visibility: visible"><a href="http://{{ s_domain }}:{{ port }}/ctf_{{ user.id }}_{{ ctf.id }}" target="_blank">{{ s_domain }}:{{ port }}/ctf_{{ user.id }}_{{ ctf.id }}</a></div><br>Please wait for a few seconds for this target link.<br>(Refresh the target page if needed)</pre>
                                             {% endif %}
                                             
                                             Please do not remove the files in the environment<br>

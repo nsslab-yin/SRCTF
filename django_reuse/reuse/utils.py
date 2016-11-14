@@ -1,5 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import random
+from datetime import datetime
 import os
 import math, string
 import json
@@ -10,17 +11,16 @@ project_path = project_path[0:project_path.rfind('/')]
 
 def cats(context):
     return {'cats':Category.objects.all()}
-
+    
 def server_domain(context):
     s_domain = "127.0.0.1"
     try:
         s_domain = os.environ["S_DOMAIN"]
-        print os.environ["S_DOMAIN"]
     except:
         s_domain = "127.0.0.1"
     
-    return {'s_domain': s_domain}    
-    
+    return {'s_domain': s_domain}
+
 class ImageChar():
 
     def __init__(self, size = (200,40), bgColor = (255,255,255), fontSize = 20):
@@ -77,9 +77,12 @@ def getConf(filedir):
     return config
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    random.seed(datetime.now())
     return ''.join(random.choice(chars) for _ in range(size))
     
 def pswd_generator(size=6, chars=string.ascii_lowercase + string.digits):
+    # select your own random seed
+    random.seed(datetime.now())
     return ''.join(random.choice(chars) for _ in range(size))
     
     
@@ -87,4 +90,6 @@ def pswd_generator(size=6, chars=string.ascii_lowercase + string.digits):
         
 #ic = ImageChar()
 #ic.draw_word('123456')
-#ic.save('/tmp/ictext.png')    
+#ic.save('/tmp/ictext.png')
+# a =pswd_generator()
+# print str(a)
