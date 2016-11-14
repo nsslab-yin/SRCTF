@@ -13,9 +13,9 @@ By NSSLab@UGA
         + lamp: Modified image for lamp
         
 # CTF-Migration(set up the environment)
-This script is a migration script to migrate the CTF Website.
+This script is used to migrate the CTF Website.
 
-In order to use this script, simple execute  
+In order to use this script, simplely execute:  
 
     ./install.sh
 
