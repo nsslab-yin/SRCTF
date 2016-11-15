@@ -1,9 +1,11 @@
 import MySQLdb
 import random
 import string
+from datetime import datetime
 
 
 def pswd_generator(size=6, chars=string.ascii_lowercase + string.digits):
+    random.seed(datetime.now())
     return ''.join(random.choice(chars) for _ in range(size))
 
 db = MySQLdb.connect("localhost","djdb","django","djdb" )
